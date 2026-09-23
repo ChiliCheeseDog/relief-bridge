@@ -1,7 +1,12 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
+const DemoContext = createContext(false);
 function Link(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
-  return <a {...props} />;
+  const demo = useContext(DemoContext);
+  const href = demo && props.href?.startsWith("/")
+    ? `#${props.href}`
+    : props.href;
+  return <a {...props} href={href} />;
 }
 import {
   ArrowUpRight,
@@ -91,7 +96,17 @@ function Picker({
     </Select>
   );
 }
-export default function ReliefApp({ view }: { view: View }) {
+export default function ReliefApp({
+  view,
+  transport = fetch,
+  demo = false,
+  onResetDemo,
+}: {
+  view: View;
+  transport?: (url: string, init?: RequestInit) => Promise<Response>;
+  demo?: boolean;
+  onResetDemo?: () => void;
+}) {
   const [data, setData] = useState<ReliefData>(sample);
   const opener = useRef<HTMLElement | null>(null);
   const hasSynced = useRef(false);
@@ -123,7 +138,7 @@ export default function ReliefApp({ view }: { view: View }) {
   async function refresh() {
     const version = revision.current;
     try {
-      const r = await fetch("/api/coordination", { cache: "no-store" });
+      const r = await transport("/api/coordination", { cache: "no-store" });
       if (!r.ok) throw new Error();
       const next = (await r.json()) as ReliefData;
       if (version !== revision.current) return;
@@ -144,7 +159,7 @@ export default function ReliefApp({ view }: { view: View }) {
     setBusy(true);
     setError("");
     try {
-      const res = await fetch("/api/coordination", {
+      const res = await transport("/api/coordination", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -224,6 +239,7 @@ export default function ReliefApp({ view }: { view: View }) {
     }
   }
   return (
+    <DemoContext.Provider value={demo}>
     <div className="site-shell">
       <a href="#main" className="skip-link">
         Skip to content
@@ -233,10 +249,15 @@ export default function ReliefApp({ view }: { view: View }) {
           <span className="notice-dot" /> DEMONSTRATION WORKSPACE
         </span>
         <span>
-          Fictional records. Real coordination possibilities.{" "}
+          {demo
+            ? "Test data stays in this browser only. "
+            : "Fictional records. Real coordination possibilities. "}
           <Link href="/about">
             About this project <ArrowUpRight size={13} />
           </Link>
+          {demo && onResetDemo && (
+            <button className="demo-reset" onClick={onResetDemo}>Reset demo data</button>
+          )}
         </span>
       </div>
       <header className="site-header">
@@ -286,9 +307,10 @@ export default function ReliefApp({ view }: { view: View }) {
             <span className={"sync-dot " + connection} />
             <span>
               {connection === "connected"
-                ? "Synced · updates every 15s"
+                ? demo ? "Saved in this browser" : "Synced · updates every 15s"
                 : connection === "loading"
-                  ? "Connecting to workspace"
+                  ? demo ? "Loading browser data" : "Connecting to workspace"
+                  : demo ? "Browser storage unavailable"
                   : hasSynced.current
                     ? "Offline · last synced data"
                     : "Offline · sample preview"}
@@ -329,7 +351,7 @@ export default function ReliefApp({ view }: { view: View }) {
             </div>
             <div className="intro-image">
               <img
-                src="/relief-team.jpg"
+                src={demo ? "./relief-team.jpg" : "/relief-team.jpg"}
                 alt="Volunteers organizing humanitarian and medical supplies in a warehouse"
               />
               <div className="image-label">
@@ -391,8 +413,9 @@ export default function ReliefApp({ view }: { view: View }) {
         )}
         {connection === "error" && (
           <div className="connection-warning" role="status">
-            The shared workspace is temporarily unavailable. Saving is paused
-            until the connection returns.{" "}
+            {demo
+              ? "Browser storage is unavailable. Enable site storage to save test records. "
+              : "The shared workspace is temporarily unavailable. Saving is paused until the connection returns. "}
             <button onClick={() => void refresh()}>Reconnect</button>
           </div>
         )}
@@ -898,7 +921,10 @@ export default function ReliefApp({ view }: { view: View }) {
               </ol>
               <h3>Built for thoughtful coordination</h3>
               <p>
-                Updates sync every 15 seconds. Allocations reserve inventory
+                {demo
+                  ? "This public test site stores fictional records in your browser. Changes persist after refresh on this browser, but are not shared with other visitors. Reset demo data restores the original examples. Do not enter real patient or personal information. "
+                  : "Updates sync every 15 seconds. "}
+                Allocations reserve inventory
                 immediately so the same donation cannot be promised twice.
                 Matches are suggestions; coordinators must review quantities and
                 suitability. This demonstration does not verify organizations or
@@ -1234,5 +1260,6 @@ export default function ReliefApp({ view }: { view: View }) {
       </Dialog>
       <Toaster position="bottom-right" theme="light" richColors closeButton />
     </div>
+    </DemoContext.Provider>
   );
 }

@@ -1,0 +1,18 @@
+.notice .demo-reset {
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 3px 8px;
+  margin-left: 14px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.demo-reset:hover { background: #ffffff1a; }
+.demo-reset:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.demo-error { background: #fff2f3; color: #941e35; padding: 12px 24px; margin: 0; }
+@media (max-width: 700px) {
+  .notice { gap: 8px; flex-wrap: wrap; }
+  .notice > span:last-child { display: block; }
+  .notice .demo-reset { margin: 6px 0 0 8px; }
+}
