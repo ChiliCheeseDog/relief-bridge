@@ -32,7 +32,7 @@ The donation becomes available for requests that need the same supply.
 1. Open a request and select **Review matches**.
 2. Review the clinic requirements and compatible donations.
 3. Select a donor. Donations in the same state appear first.
-4. Enter the allocation quantity and select **Allocate supplies**.
+4. Review the proposed allocation quantity and select **Allocate supplies**.
 
 Allocations reserve stock immediately. You cannot allocate more than the available stock or the request's remaining need.
 
