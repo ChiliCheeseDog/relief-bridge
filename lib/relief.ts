@@ -213,4 +213,4 @@ export function matches(data: ReliefData, r: RequestRecord) {
     );
 }
 export const donationUrl =
-  "https://donate.directrelief.org/campaign/547693/donate?utm_source=gemini";
+  "https://donate.directrelief.org/campaign/547693/donate";

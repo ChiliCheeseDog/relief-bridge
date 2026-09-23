@@ -339,7 +339,7 @@ export default function ReliefApp({ view }: { view: View }) {
             </div>
           </section>
         )}
-        {view !== "about" && (
+        {view === "overview" && (
           <section className="metrics" aria-label="Response metrics">
             <div>
               <span className="metric-label">
